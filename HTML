@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dungeon Mayhem - Player Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eef2f5;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #players {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    .player-card {
+      background: #fff;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      padding: 20px;
+      width: 320px;
+      transition: 0.3s ease;
+      position: relative;
+    }
+
+    .player-name {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      position: relative;
+    }
+
+    .knocked-out-icon {
+      font-size: 24px;
+      color: #c0392b;
+      margin-left: 10px;
+      display: none;
+    }
+
+    .stat-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 12px 0;
+    }
+
+    .label {
+      font-weight: bold;
+      font-size: 16px;
+      flex: 1;
+      text-align: left;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 2;
+      justify-content: flex-end;
+    }
+
+    .controls button {
+      font-size: 20px;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: none;
+      background-color: #003f72;
+      color: white;
+      cursor: pointer;
+    }
+
+    .controls button:hover {
+      background-color: #002a50;
+    }
+
+    .value {
+      min-width: 28px;
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .remove-btn {
+      margin-top: 10px;
+      font-size: 14px;
+      background-color: #c0392b;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .remove-btn:hover {
+      background-color: #a83226;
+    }
+
+    .disabled {
+      background-color: #ccc !important;
+      pointer-events: none;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Dungeon Mayhem - Player Tracker</h2>
+  <div id="players"></div>
+
+  <script>
+    let playerCount = 0;
+    let startingHealth = 10;
+
+    window.onload = function () {
+      // Ask for how many players
+      let numPlayers = parseInt(prompt("How many players are playing?"));
+      if (isNaN(numPlayers) || numPlayers <= 0) {
+        alert("Invalid number of players. Using 3 by default.");
+        numPlayers = 3;
+      }
+
+      // Ask for starting health
+      const healthInput = prompt("Enter starting health for all players (default is 10):");
+      const parsedHealth = parseInt(healthInput);
+      if (!isNaN(parsedHealth) && parsedHealth > 0) {
+        startingHealth = parsedHealth;
+      }
+
+      // Ask for each player's name
+      for (let i = 1; i <= numPlayers; i++) {
+        let name = prompt(`Enter name for Player ${i}:`);
+        if (!name) name = `Player ${i}`;
+        addPlayer(name);
+      }
+    };
+
+    function addPlayer(name) {
+      playerCount++;
+      const id = playerCount;
+
+      const card = document.createElement('div');
+      card.className = 'player-card';
+      card.id = `player${id}`;
+      card.innerHTML = `
+        <div class="player-name">
+          ${name}
+          <span class="knocked-out-icon" id="skull${id}">☠️</span>
+        </div>
+        
+        <div class="stat-row">
+          <div class="label">Health</div>
+          <div class="controls">
+            <button onclick="changeValue('health${id}', -1, ${id})">−</button>
+            <span class="value" id="health${id}">${startingHealth}</span>
+            <button onclick="changeValue('health${id}', 1, ${id})">+</button>
+          </div>
+        </div>
+
+        <div class="stat-row">
+          <div class="label">Shields</div>
+          <div class="controls">
+            <button onclick="changeValue('shield${id}', -1, ${id})">−</button>
+            <span class="value" id="shield${id}">0</span>
+            <button onclick="changeValue('shield${id}', 1, ${id})">+</button>
+          </div>
+        </div>
+
+        <button class="remove-btn" onclick="removePlayer(${id})">Remove Player</button>
+      `;
+
+      document.getElementById('players').appendChild(card);
+    }
+
+    function removePlayer(id) {
+      const card = document.getElementById(`player${id}`);
+      if (card) {
+        card.remove();
+      }
+    }
+
+    function changeValue(id, delta, playerId) {
+      const el = document.getElementById(id);
+      let current = parseInt(el.textContent);
+      current = Math.max(0, Math.min(10, current + delta));
+      el.textContent = current;
+
+      if (id.includes('health')) {
+        const card = document.getElementById(`player${playerId}`);
+        const skull = document.getElementById(`skull${playerId}`);
+
+        if (current === 0) {
+          card.classList.add("disabled");
+          skull.style.display = "inline";
+        } else {
+          card.classList.remove("disabled");
+          skull.style.display = "none";
+        }
+      }
+    }
+  </script>
+
+</body>
+</html>
